@@ -228909,9 +228909,9 @@ function renderRubyHtml(baseText, rubyText) {
 }
 function transformHashtags(markdown2) {
   return markdown2.replace(
-    /(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]+`)|(?<!\w)#([\p{L}\p{N}_\-\/]+)/gu,
-    (match2, codeBlock, tagContent) => {
-      if (codeBlock !== void 0) return codeBlock;
+    /(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]+`|<[^>]+>)|(?<!\w)#([\p{L}\p{N}_\-\/]+)/gu,
+    (match2, protectedContent, tagContent) => {
+      if (protectedContent !== void 0) return protectedContent;
       if (!tagContent) return match2;
       return `<span class="wxp-tag">#${escapeHtml(tagContent)}</span>`;
     }
@@ -229071,6 +229071,15 @@ function resolveFontFamily(theme, styleProfile) {
   }
   return styleProfile.fontFamily ?? theme.typography.fontFamily;
 }
+function offsetWechatEm(value, offset) {
+  const normalized = String(value ?? "").trim();
+  const match2 = normalized.match(/^(-?\d+(?:\.\d+)?)em$/i);
+  if (!match2) {
+    return normalized;
+  }
+  const adjusted = Math.max(0, Number(match2[1]) + offset);
+  return `${Number(adjusted.toFixed(4))}em`;
+}
 function buildCss(theme, styleProfile) {
   const palette = resolvePalette(theme, styleProfile);
   const { typography, radius: radius2 } = theme;
@@ -229109,7 +229118,7 @@ function buildCss(theme, styleProfile) {
   const h2Block = styleProfile.h2Style === "plain" ? `
   .wxp-root h2 {
     display: block;
-    margin: calc(${styleProfile.headingTopMargin} + 0.5em) 8px calc(${styleProfile.headingBottomMargin} + 0.2em);
+    margin: ${offsetWechatEm(styleProfile.headingTopMargin, 0.5)} 8px ${offsetWechatEm(styleProfile.headingBottomMargin, 0.2)};
     padding-left: 10px;
     border-left: 4px solid ${palette.primary};
     color: ${palette.primary};
@@ -229117,7 +229126,7 @@ function buildCss(theme, styleProfile) {
   }` : styleProfile.h2Style === "capsule" ? `
   .wxp-root h2 {
     display: table;
-    margin: calc(${styleProfile.headingTopMargin} + 0.45em) 8px calc(${styleProfile.headingBottomMargin} + 0.2em);
+    margin: ${offsetWechatEm(styleProfile.headingTopMargin, 0.45)} 8px ${offsetWechatEm(styleProfile.headingBottomMargin, 0.2)};
     padding: 0.18em 0.95em;
     border: 1px solid ${palette.primary};
     border-radius: 999px;
@@ -229127,7 +229136,7 @@ function buildCss(theme, styleProfile) {
   }` : `
   .wxp-root h2 {
     display: table;
-    margin: calc(${styleProfile.headingTopMargin} + 0.5em) auto calc(${styleProfile.headingBottomMargin} + 0.2em);
+    margin: ${offsetWechatEm(styleProfile.headingTopMargin, 0.5)} auto ${offsetWechatEm(styleProfile.headingBottomMargin, 0.2)};
     padding: 0.2em 0.95em;
     border-radius: ${radius2};
     background: ${palette.primary};
@@ -229138,7 +229147,7 @@ function buildCss(theme, styleProfile) {
   const h3Block = styleProfile.h3Style === "capsule" ? `
   .wxp-root h3 {
     display: table;
-    margin: calc(${styleProfile.headingTopMargin} - 0.2em) 8px ${styleProfile.headingBottomMargin};
+    margin: ${offsetWechatEm(styleProfile.headingTopMargin, -0.2)} 8px ${styleProfile.headingBottomMargin};
     padding: 0.16em 0.8em;
     border-radius: 999px;
     background: ${palette.primarySoft};
@@ -229146,12 +229155,12 @@ function buildCss(theme, styleProfile) {
     font-size: 1.08em;
   }` : styleProfile.h3Style === "plain" ? `
   .wxp-root h3 {
-    margin: calc(${styleProfile.headingTopMargin} - 0.2em) 8px ${styleProfile.headingBottomMargin};
+    margin: ${offsetWechatEm(styleProfile.headingTopMargin, -0.2)} 8px ${styleProfile.headingBottomMargin};
     color: ${palette.primary};
     font-size: 1.08em;
   }` : `
   .wxp-root h3 {
-    margin: calc(${styleProfile.headingTopMargin} - 0.2em) 8px ${styleProfile.headingBottomMargin};
+    margin: ${offsetWechatEm(styleProfile.headingTopMargin, -0.2)} 8px ${styleProfile.headingBottomMargin};
     padding-left: 10px;
     border-left: 4px solid ${palette.primary};
     font-size: 1.12em;
@@ -229160,7 +229169,7 @@ function buildCss(theme, styleProfile) {
   .wxp-root h4,
   .wxp-root h5,
   .wxp-root h6 {
-    margin: calc(${styleProfile.headingTopMargin} - 0.7em) 8px calc(${styleProfile.headingBottomMargin} - 0.2em);
+    margin: ${offsetWechatEm(styleProfile.headingTopMargin, -0.7)} 8px ${offsetWechatEm(styleProfile.headingBottomMargin, -0.2)};
     color: ${palette.primary};
     font-size: 1em;
   }` : styleProfile.h4Style === "eyebrow" ? `
@@ -229168,7 +229177,7 @@ function buildCss(theme, styleProfile) {
   .wxp-root h5,
   .wxp-root h6 {
     display: table;
-    margin: calc(${styleProfile.headingTopMargin} - 0.7em) 8px calc(${styleProfile.headingBottomMargin} - 0.15em);
+    margin: ${offsetWechatEm(styleProfile.headingTopMargin, -0.7)} 8px ${offsetWechatEm(styleProfile.headingBottomMargin, -0.15)};
     padding-bottom: 0.28em;
     border-bottom: 2px solid ${palette.primarySoft};
     color: ${palette.secondary};
@@ -229179,7 +229188,7 @@ function buildCss(theme, styleProfile) {
   .wxp-root h5,
   .wxp-root h6 {
     display: table;
-    margin: calc(${styleProfile.headingTopMargin} - 0.7em) 8px calc(${styleProfile.headingBottomMargin} - 0.15em);
+    margin: ${offsetWechatEm(styleProfile.headingTopMargin, -0.7)} 8px ${offsetWechatEm(styleProfile.headingBottomMargin, -0.15)};
     padding: 0.05em 0.65em;
     border-radius: 999px;
     background: ${palette.primarySoft};
@@ -229608,7 +229617,9 @@ function buildWechatHeadingHtml(depth, innerHtml, styleProfile) {
   if (depth !== 2 || styleProfile.h2Style !== "solid") {
     return headingHtml;
   }
-  return `<section class="wxp-centered-heading" align="center" style="text-align:center"><h2 style="display:inline-block">${innerHtml}</h2></section>`;
+  const topMargin = offsetWechatEm(styleProfile.headingTopMargin, 0.5);
+  const bottomMargin = offsetWechatEm(styleProfile.headingBottomMargin, 0.2);
+  return `<section class="wxp-centered-heading" align="center" style="text-align:center;margin:${topMargin} 8px ${bottomMargin}"><h2 style="display:inline-block;margin:0">${innerHtml}</h2></section>`;
 }
 function buildWechatLinkHtml(href, innerHtml) {
   const rawHref = String(href ?? "").trim();
@@ -229741,14 +229752,16 @@ function optimizeWechatTables(html5) {
     widths[widths.length - 1] = Number((100 - widths.slice(0, -1).reduce((sum, width3) => sum + width3, 0)).toFixed(2));
     const tableStyle = "width:100%;max-width:100%;margin-left:0;margin-right:0;table-layout:fixed;border-collapse:collapse";
     const densityStyle = columnCount >= 6 ? ";font-size:0.82em;padding:0.42em 0.35em" : ";font-size:0.88em";
-    const colgroup = `<colgroup>${widths.map((width3) => `<col width="${width3}%" style="width:${width3}%">`).join("")}</colgroup>`;
     let optimized = tableHtml.replace(/<table\b[^>]*>/i, (tag) => {
       const widthTag = tag.replace(/\swidth=(?:"[^"]*"|'[^']*'|[^\s>]+)/i, "").replace(/>$/, ' width="100%">');
-      return `${appendWechatInlineStyle(widthTag, tableStyle)}${colgroup}`;
+      return appendWechatInlineStyle(widthTag, tableStyle);
     });
     optimized = optimized.replace(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi, (rowHtml) => {
+      let column = 0;
       return rowHtml.replace(/<(?:th|td)\b[^>]*>/gi, (tag) => {
-        return appendWechatInlineStyle(tag, `white-space:normal;overflow-wrap:anywhere;word-break:break-word${densityStyle}`);
+        const width3 = widths[Math.min(column, widths.length - 1)];
+        column += 1;
+        return appendWechatInlineStyle(tag, `width:${width3}%;white-space:normal;overflow-wrap:anywhere;word-break:break-word${densityStyle}`);
       });
     });
     return optimized;
