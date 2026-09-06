@@ -229750,7 +229750,7 @@ function optimizeWechatTables(html5) {
     const total = weights.reduce((sum, weight) => sum + weight, 0);
     const widths = weights.map((weight) => Number((weight / total * 100).toFixed(2)));
     widths[widths.length - 1] = Number((100 - widths.slice(0, -1).reduce((sum, width3) => sum + width3, 0)).toFixed(2));
-    const tableStyle = "width:100%;max-width:100%;margin-left:0;margin-right:0;table-layout:fixed;border-collapse:collapse";
+    const tableStyle = "width:100%;max-width:100%;margin-top:0;margin-left:0;margin-right:0;table-layout:fixed;border-collapse:collapse";
     const densityStyle = columnCount >= 6 ? ";font-size:0.82em;padding:0.42em 0.35em" : ";font-size:0.88em";
     let optimized = tableHtml.replace(/<table\b[^>]*>/i, (tag) => {
       const widthTag = tag.replace(/\swidth=(?:"[^"]*"|'[^']*'|[^\s>]+)/i, "").replace(/>$/, ' width="100%">');
@@ -230935,7 +230935,10 @@ async function svgMarkupToPngDataUrl(svgMarkup, scale = 1) {
   return canvas.toDataURL("image/png");
 }
 function stripMarkdownLinkTarget(target) {
-  const trimmed = target.trim().replace(/^<|>$/g, "");
+  const trimmed = target.trim();
+  if (trimmed.startsWith("<") && trimmed.endsWith(">")) {
+    return trimmed.slice(1, -1).trim();
+  }
   const spaceIndex = trimmed.search(/\s(?=(?:[^"]*"[^"]*")*[^"]*$)/);
   return spaceIndex === -1 ? trimmed : trimmed.slice(0, spaceIndex);
 }

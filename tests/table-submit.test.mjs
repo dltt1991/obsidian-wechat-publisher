@@ -41,6 +41,7 @@ const output = compactWechatHtmlForSubmit(optimizeWechatTables(input));
 assert.doesNotMatch(output, /<colgroup\b|<col\b/i);
 assert.equal((output.match(/<(?:th|td)\b[^>]*style="[^"]*width:[\d.]+%/gi) ?? []).length, 6);
 assert.match(output, /<table\b[^>]*width="100%"/i);
+assert.match(output, /<table\b[^>]*style="[^"]*margin-top:0/i);
 assert.doesNotMatch(output, /<table\b[^>]*>(?:(?!<th\b|<td\b)[\s\S])*?<\/table>/i);
 
 console.log("Wechat table submission regression test passed");
