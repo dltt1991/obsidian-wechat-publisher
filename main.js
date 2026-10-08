@@ -231000,11 +231000,40 @@ ${createHtmlImageTag(
 </figure>
 `;
 }
-function buildMathFallbackHtml(expression, display) {
-  const text6 = escapeHtml2(normalizeMathExpression(expression));
+function renderPortableMathHtml(expression, display) {
+  let text6 = String(expression ?? "").trim().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+  text6 = text6.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, (_match, numerator, denominator) => `<span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;margin:0 0.16em"><span style="padding:0 0.16em">${numerator}</span><span style="border-top:1px solid currentColor;padding:0 0.16em">${denominator}</span></span>`);
+  const commands = {
+    Delta: "Δ",
+    alpha: "α",
+    beta: "β",
+    gamma: "γ",
+    theta: "θ",
+    lambda: "λ",
+    mu: "μ",
+    sigma: "σ",
+    phi: "φ",
+    omega: "ω",
+    times: "×",
+    cdot: "·",
+    pm: "±",
+    le: "≤",
+    leq: "≤",
+    ge: "≥",
+    geq: "≥",
+    neq: "≠",
+    approx: "≈",
+    infty: "∞"
+  };
+  text6 = text6.replace(/\\([A-Za-z]+)\b[ \t]*/g, (_match, command) => commands[command] ?? command);
+  text6 = text6.replace(/_\{([^{}]+)\}/g, "<sub>$1</sub>").replace(/\^\{([^{}]+)\}/g, "<sup>$1</sup>").replace(/_([A-Za-z0-9])/g, "<sub>$1</sub>").replace(/\^([A-Za-z0-9])/g, "<sup>$1</sup>").replace(/[{}]/g, "").replace(/\\(?=[,;:!])/g, "");
+  const content = `<span style="font-family:'Times New Roman',serif;white-space:nowrap">${text6}</span>`;
   return display ? `
-<section class="wxp-math-block">${text6}</section>
-` : `<span class="wxp-math-inline">${text6}</span>`;
+<section class="wxp-math-block">${content}</section>
+` : `<span class="wxp-math-inline">${content}</span>`;
+}
+function buildMathFallbackHtml(expression, display) {
+  return renderPortableMathHtml(normalizeMathExpression(expression), display);
 }
 function findVaultFile(app, sourceFile, rawLink) {
   const link3 = decodeURIComponent(rawLink).split("#")[0]?.trim();
