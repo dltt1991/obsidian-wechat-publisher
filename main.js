@@ -229033,6 +229033,33 @@ function transformFootnotes(markdown2) {
 
 ${footnoteLines.join("\n")}`;
 }
+function transformCjkAdjacentStrong(markdown2) {
+  let fenceChar = "";
+  return markdown2.split("\n").map((line2) => {
+    const fenceMatch = line2.match(/^\s*(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      const currentFenceChar = fenceMatch[1][0];
+      if (!fenceChar) {
+        fenceChar = currentFenceChar;
+      } else if (fenceChar === currentFenceChar) {
+        fenceChar = "";
+      }
+      return line2;
+    }
+    if (fenceChar) {
+      return line2;
+    }
+    return line2.split(/(`+[^`]*`+)/g).map((segment, index2) => {
+      if (index2 % 2 === 1) {
+        return segment;
+      }
+      return segment.replace(/\*\*([^*\n]+?)\*\*/g, (match2, content2, offset2, source2) => {
+        const nextCharacter = source2.slice(offset2 + match2.length).charAt(0);
+        return /[\p{L}\p{N}]/u.test(nextCharacter) ? `<strong>${content2}</strong>` : match2;
+      });
+    }).join("");
+  }).join("\n");
+}
 function preprocessWechatMarkdown(markdown2) {
   return [
     transformTocPlaceholder,
@@ -229052,6 +229079,7 @@ function preprocessWechatMarkdown(markdown2) {
     transformUnderlines,
     transformWavyLines,
     transformRuby,
+    transformCjkAdjacentStrong,
     transformFootnotes
   ].reduce((current, transformer2) => transformer2(current), markdown2);
 }
